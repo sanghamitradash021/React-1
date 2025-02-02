@@ -9,8 +9,16 @@ import './FormComponent.css';
 
 const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
 
+/**
+ * A form component for collecting user information including name, phone, email, location, and town.
+ * It also fetches weather data for the entered town.
+ *
+ * @component
+ * @returns {React.ReactNode} The FormComponent.
+ */
+
 export const FormComponent: React.FC = () => {
-  const { addData, updateData } = useAppContext();
+  const { dataService, addNotification } = useAppContext();
   const {
     register,
     handleSubmit,
@@ -25,6 +33,11 @@ export const FormComponent: React.FC = () => {
   const watchedTown = watch('town');
   const watchedCountry = watch('country');
   const watchedState = watch('state');
+
+  /**
+   * Fetches weather data for the entered town.
+   * This runs whenever the `watchedTown` value changes.
+   */
 
   useEffect(() => {
     const fetchWeatherData = async () => {
@@ -52,6 +65,10 @@ export const FormComponent: React.FC = () => {
     fetchWeatherData();
   }, [watchedTown]);
 
+  /**
+   * Listens for a custom "editItem" event and populates the form with existing data for editing.
+   */
+
   useEffect(() => {
     const handleEditItem = (item: FormData) => {
       Object.keys(item).forEach((key) => {
@@ -68,12 +85,24 @@ export const FormComponent: React.FC = () => {
     };
   }, [setValue]);
 
+  /**
+   * Handles form submission.
+   * - If in edit mode, updates the data.
+   * - Otherwise, adds new data and assigns a unique ID.
+   * - Displays a success notification.
+   * - Opens a modal if weather data is available.
+   *
+   * @param {FormData} data - The form data submitted by the user.
+   */
+
   const onSubmit = (data: FormData) => {
     if (isEditMode) {
-      updateData(data);
+      dataService.updateData(data);
+      addNotification('Data updated successfully', 'success');
     } else {
       const newData = { ...data, id: Date.now().toString() };
-      addData(newData);
+      dataService.addData(newData);
+      addNotification('Data added successfully', 'success');
     }
 
     if (weatherData) {
@@ -90,6 +119,7 @@ export const FormComponent: React.FC = () => {
   return (
     <>
       <form onSubmit={handleSubmit(onSubmit)} className="form-container">
+        {/* Name field */}
         <div className="form-group">
           <label htmlFor="name">Name</label>
           <div className="input-wrapper">
@@ -113,6 +143,7 @@ export const FormComponent: React.FC = () => {
           )}
         </div>
 
+        {/* Phone field */}
         <div className="form-group">
           <label htmlFor="phone">Phone</label>
           <div className="input-wrapper">
@@ -136,6 +167,7 @@ export const FormComponent: React.FC = () => {
           )}
         </div>
 
+        {/* Email field */}
         <div className="form-group">
           <label htmlFor="email">Email</label>
           <div className="input-wrapper">
@@ -159,6 +191,7 @@ export const FormComponent: React.FC = () => {
           )}
         </div>
 
+        {/* Country field */}
         <div className="form-group">
           <label htmlFor="country">Country</label>
           <div className="input-wrapper">
@@ -183,6 +216,7 @@ export const FormComponent: React.FC = () => {
           )}
         </div>
 
+        {/* State field */}
         <div className="form-group">
           <label htmlFor="state">State</label>
           <div className="input-wrapper">
@@ -209,6 +243,7 @@ export const FormComponent: React.FC = () => {
           )}
         </div>
 
+        {/* City field */}
         <div className="form-group">
           <label htmlFor="city">City</label>
           <div className="input-wrapper">
@@ -235,6 +270,7 @@ export const FormComponent: React.FC = () => {
           )}
         </div>
 
+        {/* ZIP field */}
         <div className="form-group">
           <label htmlFor="zip">ZIP Code</label>
           <div className="input-wrapper">
@@ -258,6 +294,7 @@ export const FormComponent: React.FC = () => {
           )}
         </div>
 
+        {/* Town field */}
         <div className="form-group">
           <label htmlFor="town">Town</label>
           <div className="input-wrapper">
@@ -279,6 +316,8 @@ export const FormComponent: React.FC = () => {
           {isEditMode ? 'Update' : 'Submit'}
         </button>
       </form>
+
+      {/* Weather Modal */}
 
       {showModal && weatherData && (
         <Modal onClose={() => setShowModal(false)}>
